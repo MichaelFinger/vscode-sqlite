@@ -1,14 +1,37 @@
 import { TreeDataProvider, Event, TreeItem, EventEmitter, ProviderResult } from "vscode";
 import { DBItem, TableItem, ColumnItem } from "./treeItem";
-import { Schema } from "../common";
+
+export type ItemInfo = DatabaseInfo | TableInfo | ColumnInfo;
+
+export interface DatabaseInfo {
+    path: string;
+    tables: TableInfo[];
+}
+
+export interface TableInfo {
+    database: string;
+    name: string;
+    type: string;
+    columns: ColumnInfo[];
+}
+
+export interface ColumnInfo {
+    database: string;
+    table: string;
+    name: string;
+    type: string;
+    notnull: boolean;
+    pk: number;
+    defVal: string;
+}
 
 
-export class ExplorerTreeProvider implements TreeDataProvider<Schema.Item> {
+export class ExplorerTreeProvider implements TreeDataProvider<ItemInfo> {
 
-    private _onDidChangeTreeData: EventEmitter<Schema.Item | undefined> = new EventEmitter<Schema.Item | undefined>();
-    readonly onDidChangeTreeData: Event<Schema.Item | undefined> = this._onDidChangeTreeData.event;
+    private _onDidChangeTreeData: EventEmitter<ItemInfo | undefined> = new EventEmitter<ItemInfo | undefined>();
+    readonly onDidChangeTreeData: Event<ItemInfo | undefined> = this._onDidChangeTreeData.event;
 
-    private databaseList: Schema.Database[];
+    private databaseList: DatabaseInfo[];
 
     constructor() {
         this.databaseList = [];
@@ -18,7 +41,7 @@ export class ExplorerTreeProvider implements TreeDataProvider<Schema.Item> {
         this._onDidChangeTreeData.fire();
     }
 
-    addToTree(database: Schema.Database) {
+    addToTree(database: DatabaseInfo) {
         let index = this.databaseList.findIndex(db => db.path === database.path);
         if (index < 0) {
             this.databaseList.push(database);
@@ -39,7 +62,7 @@ export class ExplorerTreeProvider implements TreeDataProvider<Schema.Item> {
         return this.databaseList.length;
     }
     
-    getTreeItem(item: Schema.Item): TreeItem {
+    getTreeItem(item: ItemInfo): TreeItem {
         if ('tables' in item) {
             // Database
             return new DBItem(item.path);
@@ -56,7 +79,7 @@ export class ExplorerTreeProvider implements TreeDataProvider<Schema.Item> {
         return this.databaseList;
     }
 
-    getChildren(item?: Schema.Item): ProviderResult<Schema.Item[]> {
+    getChildren(item?: ItemInfo): ProviderResult<ItemInfo[]> {
         if (item) {
             if ('tables' in item) {
                 // Database
