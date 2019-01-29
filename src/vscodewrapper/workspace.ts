@@ -1,8 +1,8 @@
 import { TextDocument, window, workspace, ViewColumn, Selection } from "vscode";
 
 
-export function createSqlDocument(show?: boolean): Thenable<TextDocument> {
-    return workspace.openTextDocument({language: 'sql'}).then(sqlDocument => {
+export function createDocument(language: string, show?: boolean): Thenable<TextDocument> {
+    return workspace.openTextDocument({language: language}).then(sqlDocument => {
         if (show) {
             window.showTextDocument(sqlDocument, ViewColumn.One);
         }
@@ -10,13 +10,22 @@ export function createSqlDocument(show?: boolean): Thenable<TextDocument> {
     });
 }
 
-export function getEditorSqlDocument(): TextDocument | undefined {
-    let editor = window.activeTextEditor;
-    if (editor) {
-        return editor.document.languageId === 'sql'? editor.document : undefined;
-    } else {
-        return undefined;
+export function getEditorDocument(...languageList: string[]): TextDocument | undefined {
+    if (!window.activeTextEditor) {
+        return;
     }
+
+    if (languageList.length === 0) {
+        return window.activeTextEditor.document;
+    }
+
+    let document = window.activeTextEditor.document;
+
+    if (languageList.indexOf(document.languageId) < 0) {
+        return;
+    }
+
+    return document;
 }
     
 export function getEditorSelection(): Selection | undefined {

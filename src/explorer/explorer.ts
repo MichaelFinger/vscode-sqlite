@@ -2,11 +2,11 @@ import { Disposable, window, commands } from "vscode";
 import { ExplorerTreeProvider, DatabaseInfo } from "./explorerTreeProvider";
 import { Constants } from "../constants/constants";
 
-export class Explorer implements Disposable {
+export class Explorer<T extends DatabaseInfo> implements Disposable {
 
     private disposable: Disposable;
 
-    private explorerTreeProvider: ExplorerTreeProvider;
+    private explorerTreeProvider: ExplorerTreeProvider<T>;
 
     constructor() {
         let subscriptions = [];
@@ -17,7 +17,7 @@ export class Explorer implements Disposable {
         this.disposable = Disposable.from(...subscriptions);
     }
 
-    add(database: DatabaseInfo): Number {
+    add(database: T): Number {
         let length = this.explorerTreeProvider.addToTree(database);
         if (length > 0) {
             commands.executeCommand( 'setContext', 'sqlite.explorer.show', true);
@@ -25,8 +25,8 @@ export class Explorer implements Disposable {
         return length;
     }
 
-    remove(dbPath: string): Number {
-        let length = this.explorerTreeProvider.removeFromTree(dbPath);
+    remove(dbName: string): Number {
+        let length = this.explorerTreeProvider.removeFromTree(dbName);
         if (length === 0) {
             // close the explorer with a slight delay (it looks better)
             setTimeout(() => {

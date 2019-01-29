@@ -22,7 +22,7 @@ describe("explorer", () => {
         });
 
         test("add should add to the tree the database object passed as argument", () => {
-            const database: treeProvider.Database = {path: "fake_db", tables: []};
+            const database: treeProvider.DatabaseInfo = {path: "fake_db", tables: []};
 
             const mockExplorerTreeProvider = {addToTree: jest.fn()};
             (treeProvider.ExplorerTreeProvider as any) = jest.fn().mockImplementation(() => {

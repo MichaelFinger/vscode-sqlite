@@ -1,8 +1,10 @@
-import { window, InputBoxOptions } from 'vscode';
+import { window } from 'vscode';
 
-export function showQueryInputBox(dbPath: string) {
+export function showInputBox(hint?: string) {
+    /*
     const options: InputBoxOptions = {
         placeHolder: `Your query here (database: ${dbPath})`
     };
-    return window.showInputBox(options);
+    */
+    return window.showInputBox({placeHolder: hint});
 }

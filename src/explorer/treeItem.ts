@@ -18,9 +18,9 @@ export class SQLItem extends TreeItem {
 
 export class DBItem extends SQLItem {
     
-    constructor(public dbPath: string, command?: Command) {
+    constructor(public name: string, command?: Command) {
         super(
-            basename(dbPath),
+            basename(name),
             TreeItemCollapsibleState.Collapsed,
             command
         );
@@ -34,7 +34,7 @@ export class DBItem extends SQLItem {
     }
 
     get tooltip(): string {
-        return `${this.dbPath}`;
+        return `${this.name}`;
     }
 }
 

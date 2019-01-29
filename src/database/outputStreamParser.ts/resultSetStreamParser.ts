@@ -1,8 +1,11 @@
-import { replaceEscapedOctetsWithChar } from "../utils/utils";
-import { ChunksParser } from "./streamParser";
-import { ResultSet } from "../common";
+import { Writable } from "stream";
+import { replaceEscapedOctetsWithChar } from "../../utils/utils";
+import { StreamParser } from "./streamParser";
+import { ResultSet } from "../interfaces/resultSet";
 
-export class ResultSetParser implements ChunksParser<ResultSet|undefined> {
+// TODO: usare regex? /"((?:[^"\\]|\\.)*)"/
+
+export class ResultSetStreamParser extends Writable implements StreamParser<ResultSet> {
     private resultSet?: ResultSet;
 
     private isInStmt: boolean;
@@ -12,8 +15,10 @@ export class ResultSetParser implements ChunksParser<ResultSet|undefined> {
     private stmt: string;
     private row: string[];
     private lastChar: string;
-
+    
     constructor() {
+        super();
+        
         this.isInStmt = true;
         this.isInHeader = false;
         this.isInString = false;
@@ -23,7 +28,12 @@ export class ResultSetParser implements ChunksParser<ResultSet|undefined> {
         this.lastChar = "";
     }
 
-    done() {
+    _write(chunk: any, encoding: string, callback: (err?: Error) => void) {
+        this.push(chunk.toString());
+        callback();
+    }
+
+    getResult() {
         return this.resultSet;
     }
 

@@ -1,37 +1,32 @@
 import { TreeDataProvider, Event, TreeItem, EventEmitter, ProviderResult } from "vscode";
 import { DBItem, TableItem, ColumnItem } from "./treeItem";
 
-export type ItemInfo = DatabaseInfo | TableInfo | ColumnInfo;
+interface ItemInfo {
+    name: string;
+}
 
-export interface DatabaseInfo {
-    path: string;
+export interface DatabaseInfo extends ItemInfo {
     tables: TableInfo[];
 }
 
-export interface TableInfo {
-    database: string;
-    name: string;
+export interface TableInfo extends ItemInfo {
     type: string;
     columns: ColumnInfo[];
 }
 
-export interface ColumnInfo {
-    database: string;
-    table: string;
-    name: string;
+export interface ColumnInfo extends ItemInfo {
     type: string;
     notnull: boolean;
     pk: number;
     defVal: string;
 }
 
-
-export class ExplorerTreeProvider implements TreeDataProvider<ItemInfo> {
+export class ExplorerTreeProvider<T extends DatabaseInfo> implements TreeDataProvider<ItemInfo> {
 
     private _onDidChangeTreeData: EventEmitter<ItemInfo | undefined> = new EventEmitter<ItemInfo | undefined>();
     readonly onDidChangeTreeData: Event<ItemInfo | undefined> = this._onDidChangeTreeData.event;
 
-    private databaseList: DatabaseInfo[];
+    private databaseList: T[];
 
     constructor() {
         this.databaseList = [];
@@ -41,8 +36,8 @@ export class ExplorerTreeProvider implements TreeDataProvider<ItemInfo> {
         this._onDidChangeTreeData.fire();
     }
 
-    addToTree(database: DatabaseInfo) {
-        let index = this.databaseList.findIndex(db => db.path === database.path);
+    addToTree(database: T) {
+        let index = this.databaseList.findIndex(db => db.name === database.name);
         if (index < 0) {
             this.databaseList.push(database);
         } else {
@@ -52,8 +47,8 @@ export class ExplorerTreeProvider implements TreeDataProvider<ItemInfo> {
         return this.databaseList.length;
     }
 
-    removeFromTree(dbPath: string) {
-        let index = this.databaseList.findIndex(db => db.path === dbPath);
+    removeFromTree(dbName: string) {
+        let index = this.databaseList.findIndex(db => db.name === dbName);
         if (index > -1) {
             this.databaseList.splice(index, 1);
         }
@@ -65,13 +60,16 @@ export class ExplorerTreeProvider implements TreeDataProvider<ItemInfo> {
     getTreeItem(item: ItemInfo): TreeItem {
         if ('tables' in item) {
             // Database
-            return new DBItem(item.path);
+            let dbInfo = item as DatabaseInfo;
+            return new DBItem(dbInfo.name);
         } else if ('columns' in item) {
             // Table
-            return new TableItem(item.name, item.type);
+            let tableInfo = item as TableInfo;
+            return new TableItem(tableInfo.name, tableInfo.type);
         } else {
             // Column
-            return new ColumnItem(item.name, item.type, item.notnull, item.pk, item.defVal);
+            let colInfo = item as ColumnInfo;
+            return new ColumnItem(colInfo.name, colInfo.type, colInfo.notnull, colInfo.pk, colInfo.defVal);
         }
     }
 
@@ -83,10 +81,12 @@ export class ExplorerTreeProvider implements TreeDataProvider<ItemInfo> {
         if (item) {
             if ('tables' in item) {
                 // Database
-                return item.tables;
+                let dbInfo = item as DatabaseInfo;
+                return dbInfo.tables;
             } else if ('columns' in item) {
                 // Table
-                return item.columns;
+                let tableInfo = item as TableInfo;
+                return tableInfo.columns;
             } else {
                 // Column
                 return [];
