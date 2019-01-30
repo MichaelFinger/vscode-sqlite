@@ -1,6 +1,6 @@
 import { Writable } from "stream";
 import { StreamParser } from "./streamParser";
-import { QueryError } from "../errors/queryError";
+import { QueryError } from "../shared/errors/queryError";
 
 export class ErrorStreamParser extends Writable implements StreamParser<QueryError> {
     private error?: string;

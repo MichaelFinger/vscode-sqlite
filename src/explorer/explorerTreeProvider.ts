@@ -1,99 +1,80 @@
 import { TreeDataProvider, Event, TreeItem, EventEmitter, ProviderResult } from "vscode";
-import { DBItem, TableItem, ColumnItem } from "./treeItem";
+import { DatabaseItem, TableItem, ColumnItem } from "./treeItem";
+import { SchemaItem, SchemaDatabase, SchemaTable, SchemaColumn } from "../shared/interfaces/schema";
 
-interface ItemInfo {
-    name: string;
-}
+export class ExplorerTreeProvider implements TreeDataProvider<SchemaItem> {
 
-export interface DatabaseInfo extends ItemInfo {
-    tables: TableInfo[];
-}
+    private _onDidChangeTreeData: EventEmitter<SchemaItem | undefined> = new EventEmitter<SchemaItem | undefined>();
+    readonly onDidChangeTreeData: Event<SchemaItem | undefined> = this._onDidChangeTreeData.event;
 
-export interface TableInfo extends ItemInfo {
-    type: string;
-    columns: ColumnInfo[];
-}
-
-export interface ColumnInfo extends ItemInfo {
-    type: string;
-    notnull: boolean;
-    pk: number;
-    defVal: string;
-}
-
-export class ExplorerTreeProvider<T extends DatabaseInfo> implements TreeDataProvider<ItemInfo> {
-
-    private _onDidChangeTreeData: EventEmitter<ItemInfo | undefined> = new EventEmitter<ItemInfo | undefined>();
-    readonly onDidChangeTreeData: Event<ItemInfo | undefined> = this._onDidChangeTreeData.event;
-
-    private databaseList: T[];
+    private schemaDatabaseList: SchemaDatabase[];
 
     constructor() {
-        this.databaseList = [];
+        this.schemaDatabaseList = [];
     }
     
     refresh(): void {
         this._onDidChangeTreeData.fire();
     }
 
-    addToTree(database: T) {
-        let index = this.databaseList.findIndex(db => db.name === database.name);
+    addToTree(schemaDatabase: SchemaDatabase) {
+        let index = this.schemaDatabaseList.findIndex(sdb => sdb.database.name === schemaDatabase.database.name);
         if (index < 0) {
-            this.databaseList.push(database);
+            this.schemaDatabaseList.push(schemaDatabase);
         } else {
-            this.databaseList[index] = database;
+            this.schemaDatabaseList[index] = schemaDatabase;
         }
         this.refresh();
-        return this.databaseList.length;
+        return this.schemaDatabaseList.length;
     }
 
     removeFromTree(dbName: string) {
-        let index = this.databaseList.findIndex(db => db.name === dbName);
+        let index = this.schemaDatabaseList.findIndex(sdb => sdb.database.name === dbName);
         if (index > -1) {
-            this.databaseList.splice(index, 1);
+            this.schemaDatabaseList.splice(index, 1);
         }
         this.refresh();
         
-        return this.databaseList.length;
+        return this.schemaDatabaseList.length;
     }
     
-    getTreeItem(item: ItemInfo): TreeItem {
+    getTreeItem(item: SchemaItem): TreeItem {
         if ('tables' in item) {
             // Database
-            let dbInfo = item as DatabaseInfo;
-            return new DBItem(dbInfo.name);
+            let schemaDatabase = item as SchemaDatabase;
+            return new DatabaseItem(schemaDatabase.database.name);
         } else if ('columns' in item) {
             // Table
-            let tableInfo = item as TableInfo;
-            return new TableItem(tableInfo.name, tableInfo.type);
+            let schemaTable = item as SchemaTable;
+            return new TableItem(schemaTable.name, schemaTable.type);
         } else {
             // Column
-            let colInfo = item as ColumnInfo;
-            return new ColumnItem(colInfo.name, colInfo.type, colInfo.notnull, colInfo.pk, colInfo.defVal);
+            let schemaColumn = item as SchemaColumn;
+            return new ColumnItem(schemaColumn.name, schemaColumn.type, schemaColumn.notnull, schemaColumn.pk, schemaColumn.defVal);
         }
     }
 
-    getDatabaseList() {
-        return this.databaseList;
+    getSchemaDatabaseList() {
+        return this.schemaDatabaseList;
     }
 
-    getChildren(item?: ItemInfo): ProviderResult<ItemInfo[]> {
+    getChildren(item?: SchemaItem): ProviderResult<SchemaItem[]> {
         if (item) {
             if ('tables' in item) {
                 // Database
-                let dbInfo = item as DatabaseInfo;
-                return dbInfo.tables;
+                let schemaDatabase = item as SchemaDatabase;
+                return schemaDatabase.tables;
             } else if ('columns' in item) {
                 // Table
-                let tableInfo = item as TableInfo;
-                return tableInfo.columns;
+                let schemaTable = item as SchemaTable;
+                return schemaTable.columns;
             } else {
                 // Column
                 return [];
             }
         } else {
             // Root
-            return this.databaseList;
+            return this.schemaDatabaseList;
         }
     }
 

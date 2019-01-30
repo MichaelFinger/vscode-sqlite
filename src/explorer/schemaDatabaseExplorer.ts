@@ -1,12 +1,13 @@
 import { Disposable, window, commands } from "vscode";
-import { ExplorerTreeProvider, DatabaseInfo } from "./explorerTreeProvider";
+import { ExplorerTreeProvider } from "./explorerTreeProvider";
 import { Constants } from "../constants/constants";
+import { SchemaDatabase } from "../shared/interfaces/schema";
 
-export class Explorer<T extends DatabaseInfo> implements Disposable {
+export class SchemaDatabaseExplorer implements Disposable {
 
     private disposable: Disposable;
 
-    private explorerTreeProvider: ExplorerTreeProvider<T>;
+    private explorerTreeProvider: ExplorerTreeProvider;
 
     constructor() {
         let subscriptions = [];
@@ -17,8 +18,8 @@ export class Explorer<T extends DatabaseInfo> implements Disposable {
         this.disposable = Disposable.from(...subscriptions);
     }
 
-    add(database: T): Number {
-        let length = this.explorerTreeProvider.addToTree(database);
+    add(schemaDatabase: SchemaDatabase): Number {
+        let length = this.explorerTreeProvider.addToTree(schemaDatabase);
         if (length > 0) {
             commands.executeCommand( 'setContext', 'sqlite.explorer.show', true);
         }
@@ -37,7 +38,7 @@ export class Explorer<T extends DatabaseInfo> implements Disposable {
     }
 
     list() {
-        return this.explorerTreeProvider.getDatabaseList();
+        return this.explorerTreeProvider.getSchemaDatabaseList();
     }
 
     refresh() {

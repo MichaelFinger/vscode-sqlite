@@ -1,8 +1,8 @@
 import { WebviewPanel, window, ViewColumn, Disposable, Uri } from "vscode";
 import { dirname } from "path";
 import { readFile } from "fs";
-import { randomString } from "../utils/utils";
 import { EventEmitter } from "events";
+import { randomString } from "../shared/utils/utils";
 
 export interface Message {
     command: string;
@@ -62,7 +62,7 @@ export class CustomView extends EventEmitter implements Disposable {
         let options = {
             enableScripts: true,
             retainContextWhenHidden: false, // we dont need to keep the state
-            localResourceRoots: [Uri.parse(this.resourcesPath).with({scheme: 'vscode-resource'})]
+            localResourceRoots: [Uri.parse(this.resourcesPath).with({scheme: this.resourceScheme})]
         };
 
         this.panel = window.createWebviewPanel(this.type, this.title, ViewColumn.Two,

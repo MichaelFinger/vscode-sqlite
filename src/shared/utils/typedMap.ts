@@ -1,4 +1,8 @@
-export class TypedMap<K extends Object, V> {
+interface StringConvertable {
+    toString: () => string;
+}
+
+export class TypedMap<K extends StringConvertable, V> {
     private map: {[key: string]: V};
 
     constructor() {

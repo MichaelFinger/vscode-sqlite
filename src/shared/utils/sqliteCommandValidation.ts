@@ -1,5 +1,5 @@
 import { spawnSync } from 'child_process';
-import { logger } from '../logging/logger';
+import { logger } from '../../logging/logger';
 import { platform } from 'os';
 import { join } from 'path';
 import { existsSync } from 'fs';

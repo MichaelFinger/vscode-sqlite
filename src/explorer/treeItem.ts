@@ -2,7 +2,7 @@ import { TreeItem, TreeItemCollapsibleState, Command } from "vscode";
 import { join, basename } from "path";
 
 export interface SQLTree {
-    [dbPath: string]: DBItem;
+    [dbPath: string]: DatabaseItem;
 }
 
 export class SQLItem extends TreeItem {
@@ -16,7 +16,7 @@ export class SQLItem extends TreeItem {
     }
 }
 
-export class DBItem extends SQLItem {
+export class DatabaseItem extends SQLItem {
     
     constructor(public name: string, command?: Command) {
         super(

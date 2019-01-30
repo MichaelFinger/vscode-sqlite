@@ -1,11 +1,11 @@
 import * as child_process from 'child_process';
-import { ResultSetStreamParser } from './outputStreamParser.ts/resultSetStreamParser';
-import { StreamParser } from './outputStreamParser.ts/streamParser';
-import { ResultSet } from './interfaces/resultSet';
-import { QueryError } from './errors/queryError';
-import { ErrorStreamParser } from './outputStreamParser.ts/errorStreamParser';
-import { CommandError } from './errors/commandError';
-import { QueryResult } from './interfaces/queryResult';
+import { ResultSetStreamParser } from './resultSetStreamParser';
+import { StreamParser } from './streamParser';
+import { ResultSet } from '../shared/interfaces/resultSet';
+import { ErrorStreamParser } from './errorStreamParser';
+import { QueryResult } from './queryResult';
+import { QueryError } from '../shared/errors/queryError';
+import { CommandError } from '../shared/errors/commandError';
 
 /**
  * 

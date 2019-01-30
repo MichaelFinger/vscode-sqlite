@@ -1,14 +1,14 @@
 import { CompletionItemProvider, Position, TextDocument, CancellationToken, CompletionContext, CompletionItem, CompletionItemKind } from "vscode";
-import { Schema } from "../common";
 import { keywords } from './keywords';
+import { SchemaDatabase, SchemaTable } from "../shared/interfaces/schema";
 
 interface SchemaProvider {
-    provideSchema: (doc: TextDocument) => Thenable<Schema|void>;
+    provideSchema: (doc: TextDocument) => Thenable<SchemaDatabase|void>;
 }
 
 export class CompletionProvider implements CompletionItemProvider {
 
-    private schemaMap: {[path: string]: Schema};
+    private schemaMap: {[path: string]: SchemaDatabase};
     
     constructor(private schemaProvider: SchemaProvider) {
         this.schemaMap = {};
@@ -27,7 +27,7 @@ export class CompletionProvider implements CompletionItemProvider {
         }
     }
 
-    private getCompletionItems(keywords: string[], tables?: Schema.Table[]) {
+    private getCompletionItems(keywords: string[], tables?: SchemaTable[]) {
         let items: CompletionItem[] = keywords.map(word => new KeywordCompletionItem(word));
         if (tables) {
             let tableItems = tables.map(tbl => new TableCompletionItem(tbl.name));

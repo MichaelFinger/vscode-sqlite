@@ -1,6 +1,6 @@
 import { executeQuery } from "./queryExecutor";
-import { DatabasePath } from "./interfaces/databasePath";
-import { DatabaseSchema, ColumnSchema } from "./interfaces/databaseSchema";
+import { Database } from "../shared/interfaces/database";
+import { SchemaDatabase, SchemaTable, SchemaColumn } from "../shared/interfaces/schema";
 
 /**
  * Retrieve the schema of a database.
@@ -10,22 +10,21 @@ import { DatabaseSchema, ColumnSchema } from "./interfaces/databaseSchema";
  * 2. we find the columns of each table found in the first step (using PRAGMA table_info)
  * 
  * @param command Sqlite command to use to retrieve the schema, it must be a valid sqlite command.
- * @param dbConfig Database configuration.
+ * @param database Database.
  * 
- * @returns Promise that resolves to the `DatabaseSchema` if there was no error,
+ * @returns Promise that resolves to the `SchemaDatabase` if there was no error,
  *          or that rejects with error `CommandError` or `QueryError` if there was any error when executing the queries.
  */
-export function retrieveSchema(command: string, dbPath: DatabasePath): Promise<DatabaseSchema> {
-    let databaseSchema: DatabaseSchema = {
-        name: dbPath.name,
-        path: dbPath.path,
+export function retrieveSchema(command: string, database: Database): Promise<SchemaDatabase> {
+    let databaseSchema: SchemaDatabase = {
+        database: database,
         tables: []
     };
 
     // query to find all tables and views in the database, ordering them by name and by type
     const tablesQuery = `SELECT name, type FROM sqlite_master WHERE type="table" OR type="view" ORDER BY type ASC, name ASC;`;
 
-    return executeQuery(command, dbPath, tablesQuery).then(({resultSet, error}) => {
+    return executeQuery(command, database, tablesQuery).then(({resultSet, error}) => {
         resultSet = resultSet? resultSet : [];
 
         if (error) {
@@ -37,12 +36,14 @@ export function retrieveSchema(command: string, dbPath: DatabasePath): Promise<D
             return Promise.resolve({resultSet: []});
         }
         
-        databaseSchema.tables = resultSet[0].rows.map(row => ({parent: databaseSchema, name: row[0], type: row[1], columns: []}) );
+        databaseSchema.tables = resultSet[0].rows.map(row => (
+            {parent: databaseSchema, name: row[0], type: row[1], columns: []} as SchemaTable
+        ));
 
         // query to find the columns of the tables
         let columnsQuery = databaseSchema.tables.map(table => `PRAGMA table_info('${table.name}');`).join('');
 
-        return executeQuery(command, dbPath, columnsQuery);
+        return executeQuery(command, database, columnsQuery);
     }).then(({resultSet, error}) => {
         resultSet = resultSet? resultSet : [];
 
@@ -63,7 +64,7 @@ export function retrieveSchema(command: string, dbPath: DatabasePath): Promise<D
                             notnull: row[result.header.indexOf('notnull')] === '1' ? true : false,
                             pk: Number(row[result.header.indexOf('pk')]) || 0,
                             defVal: row[result.header.indexOf('dflt_value')]
-                        } as ColumnSchema;
+                        } as SchemaColumn;
                     });
                     break;
                 }

@@ -1,10 +1,10 @@
 import { Disposable, languages, TextDocument } from 'vscode';
 import { CompletionProvider } from './completionProvider';
-import { Schema } from '../common';
+import { SchemaDatabase } from '../shared/interfaces/schema';
 
 export default class LanguageServer implements Disposable {
     private subscriptions: Disposable[];
-    private schemaHandler?: (doc: TextDocument) => Thenable<Schema|void>;
+    private schemaHandler?: (doc: TextDocument) => Thenable<SchemaDatabase|void>;
     private completionProvider: CompletionProvider;
 
     constructor() {
@@ -21,7 +21,7 @@ export default class LanguageServer implements Disposable {
         this.subscriptions.push(languages.registerCompletionItemProvider(documentSelector, this.completionProvider, '.'));
     }
 
-    setSchemaHandler(schemaHandler: (doc: TextDocument) => Thenable<Schema|void>) {
+    setSchemaHandler(schemaHandler: (doc: TextDocument) => Thenable<SchemaDatabase|void>) {
         this.schemaHandler = schemaHandler;
     }
 
