@@ -1,11 +1,11 @@
 import * as child_process from 'child_process';
 import { ResultSetStreamParser } from './resultSetStreamParser';
 import { StreamParser } from './streamParser';
-import { ResultSet } from '../shared/interfaces/resultSet';
+import { ResultSet } from '../../shared/interfaces/resultSet';
 import { ErrorStreamParser } from './errorStreamParser';
-import { QueryResult } from './queryResult';
-import { QueryError } from '../shared/errors/queryError';
-import { CommandError } from '../shared/errors/commandError';
+import { QueryResult } from '../queryResult';
+import { QueryError } from '../../shared/errors/queryError';
+import { CommandError } from '../../shared/errors/commandError';
 
 /**
  * 

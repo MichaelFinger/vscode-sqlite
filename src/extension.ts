@@ -1,17 +1,16 @@
 'use strict';
 
 import { ExtensionContext, commands, Uri, TextDocument, workspace, window } from 'vscode';
-import { showInputBox, createDocument, getEditorDocument, getEditorSelection, showErrorMessage } from './vscodewrapper';
+import { showQueryInputBox, pickListDatabase, pickWorkspaceDatabase, createDocument,
+         getEditorDocument, getEditorSelection, showErrorMessage, DatabaseStatusBar } from './vscodewrapper';
 import { logger } from './logging/logger';
 import { getConfiguration, Configuration } from './configuration';
 import { Constants } from './constants/constants';
-import DatabaseStatusBar from './statusBar';
 import SchemaDatabaseExploer from './explorer';
 import ResultView from './resultview';
 import LanguageServer from './languageserver';
 import { executeQuery, retrieveSchema } from './database';
 import { SchemaDatabase, SchemaTable } from './shared/interfaces/schema';
-import { pickListDatabase, pickWorkspaceDatabase } from './quickpick';
 import { Database } from './shared/interfaces/database';
 import { TypedMap } from './shared/utils/typedMap';
 import { validateSqliteCommand } from './shared/utils/sqliteCommandValidation';
@@ -165,7 +164,7 @@ function runDocumentQuery() {
 function quickQuery() {
     pickWorkspaceDatabase([], ["db", "db3", "sqlite", "sqlite3", "sdb", "s3db"], true).then(dbItem => {
         let database = Database.New(dbItem.path, dbItem.name);
-        showInputBox(`Your query here (database: ${database.name})`).then(query => {
+        showQueryInputBox(database.name).then(query => {
             if (query) {
                 runQuery(database, query, true);
             }

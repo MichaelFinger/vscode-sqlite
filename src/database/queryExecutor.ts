@@ -1,6 +1,6 @@
 import { logger } from "../logging/logger";
 import { SQLParser } from "./sqlparser";
-import {spawnProcess} from "./sqliteProcess";
+import {spawnProcess} from "./sqlite/sqliteProcess";
 import { Database } from "../shared/interfaces/database";
 import { QueryResult } from "./queryResult";
 import { CommandError } from "../shared/errors/commandError";

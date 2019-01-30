@@ -1,7 +1,7 @@
 import { Writable } from "stream";
 import { StreamParser } from "./streamParser";
-import { ResultSet } from "../shared/interfaces/resultSet";
-import { replaceEscapedOctetsWithChar } from "../shared/utils/utils";
+import { ResultSet } from "../../shared/interfaces/resultSet";
+import { replaceEscapedOctetsWithChar } from "../../shared/utils/utils";
 
 // TODO: usare regex? /"((?:[^"\\]|\\.)*)"/
 
