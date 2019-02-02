@@ -41,11 +41,13 @@ export const Disposable = {
 };
 
 export const EventEmitter = jest.fn().mockImplementation(() => {
+    let event = jest.fn();
     return {
-        event: {
-            
-        },
-        fire: jest.fn()
+        event: event,
+        fire: jest.fn().mockImplementation(() => {
+            // Is this even correct??
+            event();
+        })
     };
 });
 

@@ -56,6 +56,9 @@ describe('Extension tests', () => {
         let uri = {scheme: "file", fsPath: fakeDatabase.path};
 
         explorerAddCallback(uri).then(() => {
+            // make sure the treeDataProvider updates the tree
+            expect(treeDataProvider.onDidChangeTreeData).toHaveBeenCalledTimes(1);
+
             return expectDatabaseAddedToTree(fakeDatabase, treeDataProvider);
         }).then(() => {
             done();
@@ -83,6 +86,9 @@ describe('Extension tests', () => {
         
         // we are executing from the command palette so we dont pass any parameter
         explorerAddCallback().then(() => {
+            // make sure the treeDataProvider updates the tree
+            expect(treeDataProvider.onDidChangeTreeData).toHaveBeenCalledTimes(1);
+
             // we check that the quickpick has been opened with options: the databases in the workspace, the :memory: database, and a file picker
 
             // we retrieve the items shown by the quickpick (we just need label and description)
@@ -120,6 +126,9 @@ describe('Extension tests', () => {
         (vscode.window.showQuickPick as any) = jest.fn().mockResolvedValue(undefined);
 
         explorerAddCallback().then(() => {
+            // make sure the treeDataProvider does not update the tree since no database is added
+            expect(treeDataProvider.onDidChangeTreeData).toHaveBeenCalledTimes(0);
+
             // we check that the quickpick has been opened with options: the databases in the workspace, the :memory: database, and a file picker
 
             // we retrieve the items shown by the quickpick (we just need label and description)
@@ -165,6 +174,9 @@ describe('Extension tests', () => {
             // use the dbItem as param of explorer remove
             return explorerRemoveCallback(dbItem);
         }).then(() => {
+            // make sure the treeDataProvider updates the tree 2 times (when adding the database and when removing it)
+            expect(treeDataProvider.onDidChangeTreeData).toHaveBeenCalledTimes(2);
+            
             // make sure the explorer tree is now empty
             return Promise.resolve(treeDataProvider.getChildren()).then(dbs => {
                 expect(dbs).toEqual([]);
@@ -194,6 +206,9 @@ describe('Extension tests', () => {
         explorerAddCallback(uri).then(() => {
             // without params it should open the quickpick
             return explorerRemoveCallback().then(() => {
+                // make sure the treeDataProvider updates the tree 2 times (when adding the database and when removing it)
+                expect(treeDataProvider.onDidChangeTreeData).toHaveBeenCalledTimes(2);
+
                 let quickPickItems: vscode.QuickPickItem[] = (vscode.window.showQuickPick as jest.Mock).mock.calls[0][0];
                 // the first and only item should be the fake database
                 expect(quickPickItems.length).toBe(1);
@@ -228,6 +243,9 @@ describe('Extension tests', () => {
             // without params it should open the quickpick
             return explorerRemoveCallback();
         }).then(() => {
+            // make sure the treeDataProvider was updated just one time (when we added the database)
+            expect(treeDataProvider.onDidChangeTreeData).toHaveBeenCalledTimes(1);
+
             // make sure the explorer tree still has only the fake database item
             return Promise.resolve(treeDataProvider.getChildren()).then(dbs => {
                 expect(dbs.length).toBe(1);
