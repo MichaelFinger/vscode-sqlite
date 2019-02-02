@@ -1,7 +1,7 @@
 import { StatusBarItem, window, StatusBarAlignment, Disposable } from "vscode";
 import { Database } from "../shared/interfaces/database";
 
-export class DatabaseStatusBar implements Disposable {
+export class DatabaseStatusBarItem implements Disposable {
     private disposable: Disposable;
     private statusBarItem: StatusBarItem;
 

@@ -42,7 +42,7 @@ export class ExplorerTreeProvider implements TreeDataProvider<SchemaItem> {
         if ('tables' in item) {
             // Database
             let schemaDatabase = item as SchemaDatabase;
-            return new DatabaseItem(schemaDatabase.database.name);
+            return new DatabaseItem(schemaDatabase.database.path, schemaDatabase.database.name);
         } else if ('columns' in item) {
             // Table
             let schemaTable = item as SchemaTable;

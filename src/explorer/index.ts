@@ -1,4 +1,4 @@
-import { SchemaDatabaseExplorer } from "./schemaDatabaseExplorer";
+import { DatabaseExplorer } from "./databaseExplorer";
 
 export { SQLItem, DatabaseItem, TableItem, ColumnItem } from "./treeItem";
-export default SchemaDatabaseExplorer;
+export default DatabaseExplorer;

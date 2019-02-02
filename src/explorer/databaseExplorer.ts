@@ -3,7 +3,7 @@ import { ExplorerTreeProvider } from "./explorerTreeProvider";
 import { Constants } from "../constants/constants";
 import { SchemaDatabase } from "../shared/interfaces/schema";
 
-export class SchemaDatabaseExplorer implements Disposable {
+export class DatabaseExplorer implements Disposable {
 
     private disposable: Disposable;
 
