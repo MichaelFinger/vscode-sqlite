@@ -5,27 +5,22 @@ export enum Level {
     DEBUG = "DEBUG",
     INFO = "INFO",
     WARN = "WARN",
-    ERROR = "ERROR"
+    ERROR = "ERROR",
+    SILENT = "SILENT"
 }
 
 class Logger {
 
     private logLevel: string;
-    private silent: boolean;
     private outputChannel: OutputChannel;
 
     constructor() {
         this.logLevel = Level.INFO;
-        this.silent = false;
         this.outputChannel = window.createOutputChannel(Constants.outputChannelName);
     }
 
     setLogLevel(logLevel: string) {
         this.logLevel = logLevel;
-    }
-
-    setSilent() {
-        this.silent = true;
     }
 
     debug(msg: any) {
@@ -57,8 +52,12 @@ class Logger {
     }
 
     private log(msg: string, level: Level) {
-        if (this.silent) {
-            return;
+        // only for testing
+        if (process.env.TEST_LOG_LEVEL) {
+            this.setLogLevel(process.env.TEST_LOG_LEVEL);
+            if (!logLevelGreaterThan(level, this.logLevel as Level)) {
+                level = Level.SILENT;
+            }
         }
         
         const time = new Date().toLocaleTimeString();
@@ -67,7 +66,7 @@ class Logger {
             case Level.ERROR: console.error(msg); break;
             case Level.WARN: console.warn(msg); break;
             case Level.INFO: console.info(msg); break;
-            default: console.log(msg); break;
+            case Level.DEBUG: console.log(msg); break;
         }
         // log to output channel
         if (this.logLevel && logLevelGreaterThan(level, this.logLevel as Level)) {
@@ -78,7 +77,7 @@ class Logger {
 
 /**
  * Verify if log level l1 is greater than log level l2
- * DEBUG < INFO < WARN < ERROR
+ * DEBUG < INFO < WARN < ERROR < SILENT
  */
 function logLevelGreaterThan(l1: Level, l2: Level) {
     switch(l2) {
@@ -90,6 +89,8 @@ function logLevelGreaterThan(l1: Level, l2: Level) {
             return (l1 === Level.INFO || l1 === Level.WARN || l1 === Level.ERROR);
         case Level.DEBUG:
             return true;
+        case Level.SILENT:
+            return false;
         default:
             return (l1 === Level.INFO || l1 === Level.WARN || l1 === Level.ERROR);
     }

@@ -32,6 +32,10 @@ function run(testsRoot, clb) {
         process.env.FORCE_COLOR = true;
     }
 
+    if (configuration.logLevel) {
+        process.env.TEST_LOG_LEVEL = configuration.logLevel;
+    }
+
     console.log(configuration.jestPath+'\n');
     
     var jest = spawn('node', jestArgs, { env: process.env });

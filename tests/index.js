@@ -8,7 +8,8 @@ testrunner.configure({
     jestPath: join(__dirname, '..', 'node_modules', 'jest', 'bin', 'jest.js'),
     jestConfig: join(__dirname, '..', 'jest.json'),
     watch: false,
-    useColors: true
+    useColors: true,
+    logLevel: "ERROR"
 });
 
 module.exports = testrunner;

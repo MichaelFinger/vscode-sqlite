@@ -196,15 +196,16 @@ function explorerAdd(database?: Database): Thenable<void> {
     }
 }
 
-function explorerRemove(dbName?: string) {
+function explorerRemove(dbName?: string): Thenable<void> {
     if (dbName) {
         explorer.remove(dbName);
+        return Promise.resolve();
     } else {
         let dbList = explorer.list().map(sdb => sdb.database);
         
-        pickListDatabase(dbList).then(
+        return pickListDatabase(dbList).then(
             database => {
-                explorerRemove(database.name);
+                return explorerRemove(database.name);
             },
             rejected => {
             // No database choosen

@@ -13,8 +13,6 @@ describe('Extension tests', () => {
     beforeEach(() => {
         let context: any = {subscriptions: [], extensionPath: join(__dirname, "..")};
         return extension.activate(context).then(() => {
-            logger.setSilent();
-
             return createFakeDatabase();
         });
     });
@@ -74,6 +72,7 @@ describe('Extension tests', () => {
 
         let explorerAddCallback = getRegisteredCommandCallback(Commands.explorerAdd);
 
+        // the quickpick returns the fake database item
         (vscode.window.showQuickPick as any) = jest.fn().mockImplementation(() => {
             let quickPickItems: vscode.QuickPickItem[] = (vscode.window.showQuickPick as jest.Mock).mock.calls[0][0];
 
@@ -173,8 +172,75 @@ describe('Extension tests', () => {
         }).then(() => {
             done();
         });
-
     });
+
+    test(`command ${Commands.explorerRemove} should remove the database selected from quickpick when executed from the command palette`, (done) => {
+        // we retrieve the tree data provider created in activate() with name Constants.sqliteExplorerViewId
+        let createTreeViewCall = getMockCallWhereParamEquals((vscode.window.createTreeView as jest.Mock).mock, 0, Constants.sqliteExplorerViewId);
+        let treeDataProvider: vscode.TreeDataProvider<any> = createTreeViewCall[1].treeDataProvider;
+
+        // the quickpick returns the fake database item, that is the first item
+        (vscode.window.showQuickPick as any) = jest.fn().mockImplementation(() => {
+            let quickPickItems: vscode.QuickPickItem[] = (vscode.window.showQuickPick as jest.Mock).mock.calls[0][0];
+            return Promise.resolve(quickPickItems[0]);
+        });
+
+        // this is the uri of the database we are opening
+        let uri = {scheme: "file", fsPath: fakeDatabase.path};
+        let explorerAddCallback = getRegisteredCommandCallback(Commands.explorerAdd);
+
+        let explorerRemoveCallback = getRegisteredCommandCallback(Commands.explorerRemove);
+
+        explorerAddCallback(uri).then(() => {
+            // without params it should open the quickpick
+            return explorerRemoveCallback().then(() => {
+                let quickPickItems: vscode.QuickPickItem[] = (vscode.window.showQuickPick as jest.Mock).mock.calls[0][0];
+                // the first and only item should be the fake database
+                expect(quickPickItems.length).toBe(1);
+                expect(quickPickItems[0].label).toBe(fakeDatabase.name);
+            });
+        }).then(() => {
+            // make sure the explorer tree is now empty
+            return Promise.resolve(treeDataProvider.getChildren()).then(dbs => {
+                expect(dbs).toEqual([]);
+            });
+        }).then(() => {
+            done();
+        });
+    });
+
+    
+    test(`command ${Commands.explorerRemove} should do nothing if no database is selected from the quickpick when executed from the command palette`, (done) => {
+        // we retrieve the tree data provider created in activate() with name Constants.sqliteExplorerViewId
+        let createTreeViewCall = getMockCallWhereParamEquals((vscode.window.createTreeView as jest.Mock).mock, 0, Constants.sqliteExplorerViewId);
+        let treeDataProvider: vscode.TreeDataProvider<any> = createTreeViewCall[1].treeDataProvider;
+
+        // no database is selected from the quickpick
+        (vscode.window.showQuickPick as any) = jest.fn().mockResolvedValue(undefined);
+
+        // this is the uri of the database we are opening
+        let uri = {scheme: "file", fsPath: fakeDatabase.path};
+        let explorerAddCallback = getRegisteredCommandCallback(Commands.explorerAdd);
+
+        let explorerRemoveCallback = getRegisteredCommandCallback(Commands.explorerRemove);
+
+        explorerAddCallback(uri).then(() => {
+            // without params it should open the quickpick
+            return explorerRemoveCallback();
+        }).then(() => {
+            // make sure the explorer tree still has only the fake database item
+            return Promise.resolve(treeDataProvider.getChildren()).then(dbs => {
+                expect(dbs.length).toBe(1);
+
+                return Promise.resolve(treeDataProvider.getTreeItem(dbs[0])).then(dbItem => {
+                    expect(dbItem.label).toBe(fakeDatabase.name);
+                });
+            });
+        }).then(() => {
+            done();
+        });
+    });
+
 });
 
 
