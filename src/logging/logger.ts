@@ -11,15 +11,21 @@ export enum Level {
 class Logger {
 
     private logLevel: string;
+    private silent: boolean;
     private outputChannel: OutputChannel;
 
     constructor() {
         this.logLevel = Level.INFO;
-        this.outputChannel = window.createOutputChannel(`${Constants.outputChannelName}`);
+        this.silent = false;
+        this.outputChannel = window.createOutputChannel(Constants.outputChannelName);
     }
 
     setLogLevel(logLevel: string) {
         this.logLevel = logLevel;
+    }
+
+    setSilent() {
+        this.silent = true;
     }
 
     debug(msg: any) {
@@ -51,6 +57,10 @@ class Logger {
     }
 
     private log(msg: string, level: Level) {
+        if (this.silent) {
+            return;
+        }
+        
         const time = new Date().toLocaleTimeString();
         msg = `[${time}][${Constants.extensionName}][${level}] ${msg}`;
         switch(level) {
