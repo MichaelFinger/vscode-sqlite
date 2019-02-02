@@ -8,7 +8,7 @@ describe('workspace.ts', () => {
     describe('createDocument', () => {
 
         test('', (done) => {
-
+            done();
         });
 
     });
@@ -16,14 +16,14 @@ describe('workspace.ts', () => {
     describe("getEditorDocument", () => {
 
         test("", (done) => {
-
+            done();
         });
     });
 
     describe("getEditorSelection", () => {
 
         test("", (done) => {
-
+            done();
         });
     });
 });
