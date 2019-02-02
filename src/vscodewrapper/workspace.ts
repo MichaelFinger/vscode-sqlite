@@ -6,7 +6,7 @@ export function createDocument(language: string, show?: boolean): Thenable<TextD
         if (show) {
             window.showTextDocument(sqlDocument, ViewColumn.One);
         }
-        return Promise.resolve(sqlDocument);
+        return sqlDocument;
     });
 }
 
@@ -15,11 +15,11 @@ export function getEditorDocument(...languageList: string[]): TextDocument | und
         return;
     }
 
-    if (languageList.length === 0) {
-        return window.activeTextEditor.document;
-    }
-
     let document = window.activeTextEditor.document;
+
+    if (languageList.length === 0) {
+        return document;
+    }
 
     if (languageList.indexOf(document.languageId) < 0) {
         return;

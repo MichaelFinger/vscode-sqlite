@@ -27,6 +27,8 @@ export function validateSqliteCommand(sqliteCommand: string, extensionPath: stri
 
 // verifies that the command/path passed as argument is an sqlite command
 export function isSqliteCommandValid(sqliteCommand: string) {
+    if (!sqliteCommand) return false;
+
     let proc = spawnSync(`"${sqliteCommand}"`, [`-version`], {shell: true});
     
     let output = proc.stdout.toString();
