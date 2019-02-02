@@ -1,12 +1,12 @@
 'use strict';
 
 import { ExtensionContext, commands, Uri, TextDocument, workspace, window } from 'vscode';
-import { showQueryInputBox, pickListDatabase, pickWorkspaceDatabase, createDocument,
-         getEditorDocument, getEditorSelection, showErrorMessage, DatabaseStatusBar } from './vscodewrapper';
+import { showInputBox, pickListDatabase, pickWorkspaceDatabase, createDocument,
+         getEditorDocument, getEditorSelection, showErrorMessage, DatabaseStatusBarItem } from './vscodewrapper';
 import { logger } from './logging/logger';
 import { getConfiguration, Configuration } from './configuration';
 import { Constants } from './constants/constants';
-import SchemaDatabaseExploer from './explorer';
+import DatabaseExploer from './explorer';
 import ResultView from './resultview';
 import LanguageServer from './languageserver';
 import { executeQuery, retrieveSchema } from './database';
@@ -14,25 +14,13 @@ import { SchemaDatabase, SchemaTable } from './shared/interfaces/schema';
 import { Database } from './shared/interfaces/database';
 import { TypedMap } from './shared/utils/typedMap';
 import { validateSqliteCommand } from './shared/utils/sqliteCommandValidation';
-
-export namespace Commands {
-    export const showOutputChannel = "sqlite.showOutputChannel";
-    export const runDocumentQuery = "sqlite.runDocumentQuery";
-    export const useDatabase: string = 'sqlite.useDatabase';
-    export const explorerAdd: string = 'sqlite.explorer.add';
-    export const explorerRemove: string = 'sqlite.explorer.remove';
-    export const explorerRefresh: string = 'sqlite.explorer.refresh';
-    export const newQuery: string = 'sqlite.newQuery';
-    export const quickQuery: string = 'sqlite.quickQuery';
-    export const runTableQuery: string = 'sqlite.runTableQuery';
-    export const runSqliteMasterQuery: string = 'sqlite.runSqliteMasterQuery';
-}
+import { Commands } from './constants/commands';
 
 let configuration: Configuration;
 let sqliteCommand: string; // sqlite command to use to execute queries
 let documentDatabaseMap: TypedMap<Uri, Database>;
-let databaseStatusBar: DatabaseStatusBar;
-let explorer: SchemaDatabaseExploer;
+let databaseStatusBarItem: DatabaseStatusBarItem;
+let explorer: DatabaseExploer;
 let resultView: ResultView;
 let languageserver: LanguageServer;
 
@@ -66,10 +54,10 @@ export function activate(context: ExtensionContext): Promise<boolean> {
 
     // initialize modules
     documentDatabaseMap = new TypedMap<Uri, Database>();
-    databaseStatusBar = new DatabaseStatusBar(Commands.useDatabase);
-    explorer = new SchemaDatabaseExploer();
+    databaseStatusBarItem = new DatabaseStatusBarItem(Commands.useDatabase);
+    explorer = new DatabaseExploer();
     resultView = new ResultView(context.extensionPath);
-    languageserver = new LanguageServer();
+    //languageserver = new LanguageServer();
 
     // TODO: redo this part
     /*
@@ -80,7 +68,7 @@ export function activate(context: ExtensionContext): Promise<boolean> {
     });
     */
 
-    context.subscriptions.push(languageserver, databaseStatusBar, explorer, resultView);
+    context.subscriptions.push(languageserver, databaseStatusBarItem, explorer, resultView);
 
     context.subscriptions.push(window.onDidChangeActiveTextEditor(updateDatabaseStatusBar));
     context.subscriptions.push(window.onDidChangeTextEditorViewColumn(updateDatabaseStatusBar));
@@ -138,9 +126,9 @@ function updateDatabaseStatusBar() {
     let sqlDocument = getEditorDocument('sql');
     if (sqlDocument) {
         let database = documentDatabaseMap.get(sqlDocument.uri);
-        databaseStatusBar.show(database);
+        databaseStatusBarItem.show(database);
     } else {
-        databaseStatusBar.hide();
+        databaseStatusBarItem.hide();
     }
 }
 
@@ -164,11 +152,14 @@ function runDocumentQuery() {
 function quickQuery() {
     pickWorkspaceDatabase([], ["db", "db3", "sqlite", "sqlite3", "sdb", "s3db"], true).then(dbItem => {
         let database = Database.New(dbItem.path, dbItem.name);
-        showQueryInputBox(database.name).then(query => {
-            if (query) {
+        showInputBox(`Your query here (database: ${database.name})`).then(
+            query => {
                 runQuery(database, query, true);
+            },
+            rejected => {
+                // No input
             }
-        });
+        );
     });
 }
 
@@ -178,7 +169,7 @@ function useDatabase(): Thenable<Database> {
         database => {
             if (sqlDocument) {
                 documentDatabaseMap.set(sqlDocument.uri, database);
-                databaseStatusBar.show(database);
+                databaseStatusBarItem.show(database);
             }
             return database;
         },
@@ -188,15 +179,15 @@ function useDatabase(): Thenable<Database> {
     );
 }
 
-function explorerAdd(database?: Database) {
+function explorerAdd(database?: Database): Thenable<void> {
     if (database) {
-        retrieveSchema(sqliteCommand, database).then(schemaDatabase => {
+        return retrieveSchema(sqliteCommand, database).then(schemaDatabase => {
             explorer.add(schemaDatabase);
         });
     } else {
-        pickWorkspaceDatabase([], ["db", "db3", "sqlite", "sqlite3", "sdb", "s3db"], false).then(
+        return pickWorkspaceDatabase([], ["db", "db3", "sqlite", "sqlite3", "sdb", "s3db"], false).then(
             database => {
-                explorerAdd(database);
+                return explorerAdd(database);
             },
             rejected => {
                 // No database picked
